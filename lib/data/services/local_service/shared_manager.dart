@@ -55,8 +55,8 @@ class SharedManager {
     AppLogger.instance.logD('Access token saved');
   }
 
-  String getAccessToken() {
-    return _sharedPreferences.getString(SharedKeys.accessToken.name) ?? '';
+  String? getAccessToken() {
+    return _sharedPreferences.getString(SharedKeys.accessToken.name);
   }
 
   Future<void> removeAccessToken() async {

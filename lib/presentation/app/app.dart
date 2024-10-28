@@ -4,6 +4,7 @@ import 'package:example_flutter_app/config/theme/app_theme.dart';
 import 'package:example_flutter_app/injection/di.dart';
 import 'package:example_flutter_app/l10n/app_localizations.dart';
 import 'package:example_flutter_app/presentation/app/cubit/app_cubit.dart';
+import 'package:example_flutter_app/presentation/cubit/cubit/auth_cubit.dart';
 import 'package:example_flutter_app/presentation/navigation/app_router.dart';
 import 'package:example_flutter_app/presentation/utilities/enums/common/languages.dart';
 import 'package:example_flutter_app/presentation/utilities/logger/app_logger.dart';
@@ -49,27 +50,45 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AppCubit>(
-      create: (contExt) => getIt<AppCubit>(),
-      child: BlocBuilder<AppCubit, AppState>(
-        buildWhen: (previous, current) =>
-            previous.currentLanguage != current.currentLanguage,
-        builder: (context, state) {
-          return MaterialApp.router(
-            title: getIt<AppConfig>().title,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            theme: getThemeData(Brightness.light),
-            locale: state.currentLanguage.locate,
-            supportedLocales: AppLocalizations.supportedLocales,
-            routerConfig: getIt<AppRouter>().config(),
-            builder: EasyLoading.init(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AppCubit>(
+          create: (contExt) => getIt<AppCubit>(),
+        ),
+        BlocProvider<AuthCubit>(
+          create: (context) => getIt<AuthCubit>(),
+        ),
+      ],
+      child: BlocListener<AuthCubit, AuthState>(
+        bloc: getIt<AuthCubit>(),
+        listener: (context, state) {
+          state.maybeWhen(
+            orElse: () {},
+            unauthenticated: () {
+              getIt<AppRouter>().replace(const LoginRoute());
+            },
           );
         },
+        child: BlocBuilder<AppCubit, AppState>(
+          buildWhen: (previous, current) =>
+              previous.currentLanguage != current.currentLanguage,
+          builder: (context, state) {
+            return MaterialApp.router(
+              title: getIt<AppConfig>().title,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              theme: getThemeData(Brightness.light),
+              locale: state.currentLanguage.locate,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: getIt<AppRouter>().config(),
+              builder: EasyLoading.init(),
+            );
+          },
+        ),
       ),
     );
   }

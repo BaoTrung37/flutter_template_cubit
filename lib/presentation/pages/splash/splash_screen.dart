@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:example_flutter_app/config/app_config.dart';
 import 'package:example_flutter_app/injection/di.dart';
+import 'package:example_flutter_app/presentation/cubit/cubit/auth_cubit.dart';
 import 'package:example_flutter_app/presentation/navigation/app_router.dart';
 import 'package:example_flutter_app/presentation/pages/splash/cubit/splash_cubit.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _initialize() async {
     await getIt<AppConfig>().init();
 
-    await _navigateToNextScreen();
+    await getIt<AuthCubit>().init();
+    if (getIt<AuthCubit>().state == const AuthState.unauthenticated()) {
+      await getIt<AppRouter>().replace(const LoginRoute());
+    } else {
+      await _navigateToNextScreen();
+    }
   }
 
   Future<void> _navigateToNextScreen() async {

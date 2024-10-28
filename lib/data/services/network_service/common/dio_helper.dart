@@ -5,7 +5,6 @@ import 'package:example_flutter_app/data/services/network_service/interceptors/c
 import 'package:example_flutter_app/injection/di.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-// @module
 abstract class DioHelper {
   // @factoryMethod
   static Dio configApiDio(AppConfig appConfig) => _createDio(
